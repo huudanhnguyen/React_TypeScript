@@ -14,7 +14,8 @@
       "components/*": ["./src/components/*"],
       "pages/*": ["./src/pages/*"],
       "helpers/*": ["./src/helpers/*"],
-      "styles/*": ["./src/styles/*"]
+      "styles/*": ["./src/styles/*"],
+      "services/*": ["./src/services/*"],
     },
 
     /* Bundler mode */
