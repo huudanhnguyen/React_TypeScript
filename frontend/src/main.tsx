@@ -1,6 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import App from '@/App.tsx'
+import Layout from '@/Layout'
 import {
   createBrowserRouter,
   RouterProvider,
@@ -11,11 +11,12 @@ import RegisterPage from 'pages/client/auth/register.tsx';
 import BookPage from 'pages/client/book.tsx';
 import UserPage from 'pages/client/user.tsx';
 import 'styles/global.scss'
+import { App } from 'antd';
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <App />,
+    element: <Layout />,
     errorElement: <ErrorPage />,
     children: [
       {
@@ -40,6 +41,8 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
+    <App>
     <RouterProvider router={router} />
+    </App>
   </StrictMode>,
 )

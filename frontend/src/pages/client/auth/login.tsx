@@ -1,36 +1,47 @@
-import React from "react";
-import {
-  Button,
-  Card,
-  Form,
-  Input,
-  Typography,
-  message,
-} from "antd";
+import React, { useState } from "react";
+import { Button, Card, Form, Input, Typography, App } from "antd";
 import {
   LockOutlined,
   MailOutlined,
   EyeInvisibleOutlined,
   EyeTwoTone,
 } from "@ant-design/icons";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { loginAPI } from "@/services/api";
 
 const { Title, Text } = Typography;
 
 interface LoginFormValues {
-  email: string;
+  username: string;
   password: string;
 }
 
 const LoginPage: React.FC = () => {
   const [form] = Form.useForm();
+  const { message } = App.useApp();
+  const [isSubmit, setIsSubmit] = useState(false);
+  const navigate = useNavigate();
 
-  const onFinish = (values: LoginFormValues) => {
-    // Chỉ để tạm log ra console, không xử lý đăng nhập
-    console.log("Form values:", values);
-    message.success("This is UI only — no login logic!");
+  const onFinish = async (values: LoginFormValues) => {
+    try {
+      setIsSubmit(true);
+      const { username, password } = values;
+
+      const res = await loginAPI(username, password);
+
+      if (res.data) {
+        localStorage.setItem('access_token',res.data.access_token);
+        message.success("Login successfully!");
+        navigate("/");
+      } else {
+        message.error(res.message || "Login failed!");
+      }
+    } catch (error: any) {
+      message.error(error.response?.data?.message || "Server error!");
+    } finally {
+      setIsSubmit(false);
+    }
   };
-
   return (
     <div
       style={{
@@ -68,7 +79,7 @@ const LoginPage: React.FC = () => {
         >
           <Form.Item
             label="Email"
-            name="email"
+            name="username"
             rules={[
               { required: true, message: "Please enter your email!" },
               { type: "email", message: "Invalid email format!" },
@@ -137,6 +148,7 @@ const LoginPage: React.FC = () => {
               htmlType="submit"
               size="large"
               block
+              loading={isSubmit}
               style={{
                 borderRadius: 8,
                 background: "linear-gradient(90deg, #1890ff, #40a9ff)",
@@ -144,7 +156,7 @@ const LoginPage: React.FC = () => {
                 fontWeight: 500,
               }}
             >
-              Login
+              {isSubmit ? "Logging in..." : "Login"}
             </Button>
           </Form.Item>
         </Form>

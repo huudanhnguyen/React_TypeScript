@@ -28,6 +28,13 @@ interface IBackendRes<T> {
             id:string;
         }
     }
+        interface IRegister{
+        user:{
+            _id:string;
+            email:string;
+            fullName:string;
+        }
+    }
 
    }
  

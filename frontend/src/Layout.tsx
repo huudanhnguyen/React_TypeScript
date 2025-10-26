@@ -1,7 +1,7 @@
 import { Outlet } from "react-router-dom"
 import AppHeader from "./components/layouts/app.header"
 
-function App() {
+function Layout() {
 
   return (
     <>
@@ -14,4 +14,4 @@ function App() {
   )
 }
 
-export default App
+export default Layout
