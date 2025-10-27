@@ -8,39 +8,51 @@ import { SyncLoader } from "react-spinners";
 function Layout() {
   const { setUser, setIsAppLoading, isAppLoading, setIsAuthenticated } =
     useCurrentApp();
+
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
-    if (!token) return;
     const fetchAccount = async () => {
-      const res = await fetchAccountAPI();
-      if (res.data) {
-        setUser(res.data.user);
-        setIsAuthenticated(true);
+      setIsAppLoading(true);
+      const token = localStorage.getItem("access_token");
+
+      if (!token) {
+        setIsAppLoading(false);
+        return;
       }
-      setIsAppLoading(false);
+      try {
+        const res = await fetchAccountAPI();
+        if (res.data) {
+          setUser(res.data.user);
+          setIsAuthenticated(true);
+        } else {
+          setIsAuthenticated(false);
+        }
+      } finally {
+        setIsAppLoading(false);
+      }
     };
     fetchAccount();
   }, []);
+
+  if (isAppLoading) {
+    return (
+      <div
+        style={{
+          position: "fixed",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+        }}
+      >
+        <SyncLoader color="#1677ff" />
+      </div>
+    );
+  }
+
   return (
-    <>
-      {isAppLoading === false ? (
-        <div>
-          <AppHeader />
-          <Outlet />
-        </div>
-      ) : (
-        <div
-          style={{
-            position: "fixed",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%,-50%)",
-          }}
-        >
-          <SyncLoader />
-        </div>
-      )}
-    </>
+    <div>
+      <AppHeader />
+      <Outlet />
+    </div>
   );
 }
 

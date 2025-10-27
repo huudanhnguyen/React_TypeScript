@@ -35,6 +35,8 @@ const onFinish = async (values: LoginFormValues) => {
       setIsAuthenticated(true);
       setUser(res.data.user);
       localStorage.setItem("access_token", res.data.access_token);
+      localStorage.setItem("isAuthenticated", "true");
+      localStorage.setItem("user", JSON.stringify(res.data.user));
       message.success("Login successfully!");
       navigate("/");
     } else {

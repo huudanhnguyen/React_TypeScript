@@ -33,7 +33,7 @@ export const AppProvider = ({ children }: TProps) => {
       setIsAuthenticated(false);
     }
 
-    setIsAppLoading(false);
+    // setIsAppLoading(false);
   }, []);
 
   // ✅ Khi user hoặc trạng thái đăng nhập thay đổi, lưu lại vào localStorage

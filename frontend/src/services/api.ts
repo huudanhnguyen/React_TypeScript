@@ -13,6 +13,11 @@ export const loginAPI = (username: string, password: string) => {
   );
 };
 
+export const logoutAPI = () => {
+  const urlBackend = "/api/v1/auth/logout";
+  return axios.post<IBackendRes<IRegister>>(urlBackend);
+};
+
 export const registerAPI = (
   fullName: string,
   email: string,

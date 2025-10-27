@@ -10,31 +10,41 @@ import UserPage from "pages/client/user.tsx";
 import "styles/global.scss";
 import { App } from "antd";
 import { AppProvider } from "components/context/app.context";
+import PrivateRoute from "./routes/privateRoute";
 
 const router = createBrowserRouter([
+  // 🔹 Layout mặc định cho người dùng (có Header)
   {
     path: "/",
     element: <Layout />,
     errorElement: <ErrorPage />,
     children: [
+      { path: "/users", element: <UserPage /> },
+      { path: "/books", element: <BookPage /> },
       {
-        path: "/users",
-        element: <UserPage />,
-      },
-      {
-        path: "/books",
-        element: <BookPage />,
+        path: "/checkout",
+        element: (
+          <PrivateRoute requiredRole="user">
+            <div>Checkout content</div>
+          </PrivateRoute>
+        ),
       },
     ],
   },
+
+  // 🔹 Admin route riêng biệt (không kế thừa Header)
   {
-    path: "/login",
-    element: <LoginPage />,
+    path: "/admin",
+    element: (
+      <PrivateRoute requiredRole="admin">
+        <div>admin page</div>
+      </PrivateRoute>
+    ),
   },
-  {
-    path: "/register",
-    element: <RegisterPage />,
-  },
+
+  // 🔹 Auth routes
+  { path: "/login", element: <LoginPage /> },
+  { path: "/register", element: <RegisterPage /> },
 ]);
 
 createRoot(document.getElementById("root")!).render(

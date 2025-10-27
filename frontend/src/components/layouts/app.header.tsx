@@ -4,6 +4,8 @@ import {
   UserOutlined,
   LogoutOutlined,
   SettingOutlined,
+  DashboardOutlined,
+  ShoppingCartOutlined,
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import type { MenuProps } from "antd";
@@ -22,20 +24,20 @@ const HeaderBar: React.FC = () => {
   const navigate = useNavigate();
   const { user, setUser, setIsAuthenticated } = useCurrentApp();
 
-  // 🔹 Các mục điều hướng
+  // 🔹 Menu chính (chung cho mọi user)
   const menuItems: NavItem[] = [
     { key: "1", label: "Home", path: "/" },
     { key: "2", label: "Books", path: "/books" },
     { key: "3", label: "Contact", path: "/contact" },
   ];
 
-  // 🔹 Khi click menu chính (Home / Books / Contact)
+  // 🔹 Khi click menu chính
   const handleMenuClick: MenuProps["onClick"] = (e) => {
     const selected = menuItems.find((item) => item.key === e.key);
     if (selected) navigate(selected.path);
   };
 
-  // 🔹 Khi click "Đăng xuất"
+  // 🔹 Logout
   const handleLogout = () => {
     setUser(null);
     setIsAuthenticated(false);
@@ -45,7 +47,7 @@ const HeaderBar: React.FC = () => {
     navigate("/");
   };
 
-  // 🔹 Menu trong dropdown (tuỳ theo có user hay không)
+  // 🔹 Dropdown menu (tùy role)
   const dropdownMenu: MenuProps["items"] = user
     ? [
         {
@@ -68,6 +70,29 @@ const HeaderBar: React.FC = () => {
           label: "Settings",
           onClick: () => navigate("/settings"),
         },
+        // 🔹 Nếu là user → hiện “Checkout”
+        ...(user.role?.toLowerCase() === "user"
+          ? [
+              {
+                key: "checkout",
+                icon: <ShoppingCartOutlined />,
+                label: "Checkout",
+                onClick: () => navigate("/checkout"),
+              },
+            ]
+          : []),
+        // 🔹 Nếu là admin → hiện “Admin Dashboard”
+        ...(user.role?.toLowerCase() === "admin"
+          ? [
+              {
+                key: "admin",
+                icon: <DashboardOutlined />,
+                label: "Admin Dashboard",
+                onClick: () => navigate("/admin"),
+              },
+            ]
+          : []),
+        { type: "divider" as const },
         {
           key: "logout",
           icon: <LogoutOutlined />,
@@ -97,7 +122,6 @@ const HeaderBar: React.FC = () => {
     >
       {/* 🔹 Logo + menu */}
       <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-        {/* Logo */}
         <div
           style={{ fontSize: 20, fontWeight: 600, cursor: "pointer" }}
           onClick={() => navigate("/")}
@@ -105,16 +129,13 @@ const HeaderBar: React.FC = () => {
           MyWebsite
         </div>
 
-        {/* Menu điều hướng */}
         <Menu
           mode="horizontal"
           defaultSelectedKeys={["1"]}
-          items={
-            menuItems.map((item) => ({
-              key: item.key,
-              label: item.label,
-            })) as MenuProps["items"]
-          }
+          items={menuItems.map((item) => ({
+            key: item.key,
+            label: item.label,
+          }))}
           onClick={handleMenuClick}
           style={{ borderBottom: "none" }}
         />
