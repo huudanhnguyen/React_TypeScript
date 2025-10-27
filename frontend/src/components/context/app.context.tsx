@@ -1,8 +1,9 @@
-import { createContext, useState, useContext } from "react";
+import { createContext, useState, useContext, useEffect } from "react";
+
 interface IAppContext {
   isAuthenticated: boolean;
   setIsAuthenticated: (v: boolean) => void;
-  setUser: (v: IUser) => void;
+  setUser: (v: IUser | null) => void;
   user: IUser | null;
   isAppLoading: boolean;
   setIsAppLoading: (v: boolean) => void;
@@ -14,10 +15,38 @@ type TProps = {
   children: React.ReactNode;
 };
 
-export const AppProvider = (props: TProps) => {
+export const AppProvider = ({ children }: TProps) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [user, setUser] = useState<IUser | null>(null);
   const [isAppLoading, setIsAppLoading] = useState<boolean>(true);
+
+  // ✅ Khi app load, đọc dữ liệu từ localStorage
+  useEffect(() => {
+    const savedUser = localStorage.getItem("user");
+    const savedAuth = localStorage.getItem("isAuthenticated");
+
+    if (savedUser && savedAuth === "true") {
+      setUser(JSON.parse(savedUser));
+      setIsAuthenticated(true);
+    } else {
+      setUser(null);
+      setIsAuthenticated(false);
+    }
+
+    setIsAppLoading(false);
+  }, []);
+
+  // ✅ Khi user hoặc trạng thái đăng nhập thay đổi, lưu lại vào localStorage
+  useEffect(() => {
+    if (user && isAuthenticated) {
+      localStorage.setItem("user", JSON.stringify(user));
+      localStorage.setItem("isAuthenticated", "true");
+    } else {
+      localStorage.removeItem("user");
+      localStorage.removeItem("isAuthenticated");
+    }
+  }, [user, isAuthenticated]);
+
   return (
     <CurrentAppContext.Provider
       value={{
@@ -29,16 +58,17 @@ export const AppProvider = (props: TProps) => {
         setIsAppLoading,
       }}
     >
-      {props.children}
+      {children}
     </CurrentAppContext.Provider>
   );
 };
+
 export const useCurrentApp = () => {
   const currentAppContext = useContext(CurrentAppContext);
 
   if (!currentAppContext) {
     throw new Error(
-      "currentAppContext has to be used within <CurrentAppContext.Provider>"
+      "useCurrentApp has to be used within <AppProvider>"
     );
   }
 
