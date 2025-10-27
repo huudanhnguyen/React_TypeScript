@@ -7,6 +7,7 @@ import {
 } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import type { MenuProps } from "antd";
+import { useCurrentApp } from "../context/app.context";
 
 const { Header } = Layout;
 
@@ -18,14 +19,13 @@ interface NavItem {
 
 const HeaderBar: React.FC = () => {
   const navigate = useNavigate();
-
+  const{user}=useCurrentApp();
   const menuItems: NavItem[] = [
     { key: "1", label: "Home", path: "/" },
     { key: "2", label: "Books", path: "/books" },
     { key: "3", label: "Contact", path: "/contact" },
   ];
 
-  // ✅ Dùng kiểu chuẩn của antd cho sự kiện click
   const handleMenuClick: MenuProps["onClick"] = (e) => {
     const selected = menuItems.find((item) => item.key === e.key);
     if (selected) navigate(selected.path);
@@ -55,33 +55,37 @@ const HeaderBar: React.FC = () => {
         padding: "0 24px",
       }}
     >
-      {/* Logo / Tên website */}
-      <div
-        style={{ fontSize: 20, fontWeight: 600, cursor: "pointer" }}
-        onClick={() => navigate("/")}
-      >
-        MyWebsite
+      {/* 🔹 Gộp logo + menu vào cùng 1 khối để menu nằm cạnh logo */}
+      <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+        {/* Logo */}
+        <div
+          style={{ fontSize: 20, fontWeight: 600, cursor: "pointer" }}
+          onClick={() => navigate("/")}
+        >
+          MyWebsite
+        </div>
+        <div>
+          {JSON.stringify(user)}
+        </div>
+
+        {/* 🔹 Menu đặt ngay cạnh logo */}
+        <Menu
+          mode="horizontal"
+          defaultSelectedKeys={["1"]}
+          items={
+            menuItems.map((item) => ({
+              key: item.key,
+              label: item.label,
+            })) as MenuProps["items"]
+          }
+          onClick={handleMenuClick}
+          style={{
+            borderBottom: "none", // 🔹 bỏ justifyContent: "center"
+          }}
+        />
       </div>
 
-      {/* Menu chính */}
-      <Menu
-        mode="horizontal"
-        defaultSelectedKeys={["1"]}
-        items={
-          menuItems.map((item) => ({
-            key: item.key,
-            label: item.label,
-          })) as MenuProps["items"]
-        }
-        onClick={handleMenuClick}
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          borderBottom: "none",
-        }}
-      />
-
-      {/* User Avatar */}
+      {/* Avatar bên phải giữ nguyên */}
       <Dropdown menu={{ items: dropdownMenu }} placement="bottomRight" arrow>
         <Space style={{ cursor: "pointer" }}>
           <Avatar size="large" icon={<UserOutlined />} />

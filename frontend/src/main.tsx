@@ -1,17 +1,15 @@
-import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import Layout from '@/Layout'
-import {
-  createBrowserRouter,
-  RouterProvider,
-} from "react-router-dom";
-import ErrorPage from 'pages/client/error.tsx';
-import LoginPage from 'pages/client/auth/login.tsx';
-import RegisterPage from 'pages/client/auth/register.tsx';
-import BookPage from 'pages/client/book.tsx';
-import UserPage from 'pages/client/user.tsx';
-import 'styles/global.scss'
-import { App } from 'antd';
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import Layout from "@/Layout";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import ErrorPage from "pages/client/error.tsx";
+import LoginPage from "pages/client/auth/login.tsx";
+import RegisterPage from "pages/client/auth/register.tsx";
+import BookPage from "pages/client/book.tsx";
+import UserPage from "pages/client/user.tsx";
+import "styles/global.scss";
+import { App } from "antd";
+import { AppProvider } from "components/context/app.context";
 
 const router = createBrowserRouter([
   {
@@ -21,11 +19,11 @@ const router = createBrowserRouter([
     children: [
       {
         path: "/users",
-        element:<UserPage/>
+        element: <UserPage />,
       },
       {
         path: "/books",
-        element:<BookPage/>
+        element: <BookPage />,
       },
     ],
   },
@@ -39,10 +37,12 @@ const router = createBrowserRouter([
   },
 ]);
 
-createRoot(document.getElementById('root')!).render(
+createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <App>
-    <RouterProvider router={router} />
-    </App>
-  </StrictMode>,
-)
+    <AppProvider>
+      <App>
+        <RouterProvider router={router} />
+      </App>
+    </AppProvider>
+  </StrictMode>
+);

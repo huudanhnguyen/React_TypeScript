@@ -8,6 +8,7 @@ import {
 } from "@ant-design/icons";
 import { Link, useNavigate } from "react-router-dom";
 import { loginAPI } from "@/services/api";
+import { useCurrentApp } from "@/components/context/app.context";
 
 const { Title, Text } = Typography;
 
@@ -18,30 +19,49 @@ interface LoginFormValues {
 
 const LoginPage: React.FC = () => {
   const [form] = Form.useForm();
-  const { message } = App.useApp();
+  const { message, notification } = App.useApp();
   const [isSubmit, setIsSubmit] = useState(false);
   const navigate = useNavigate();
+  const{setIsAuthenticated,setUser}=useCurrentApp();
 
-  const onFinish = async (values: LoginFormValues) => {
-    try {
-      setIsSubmit(true);
-      const { username, password } = values;
+const onFinish = async (values: LoginFormValues) => {
+  try {
+    setIsSubmit(true);
+    const { username, password } = values;
 
-      const res = await loginAPI(username, password);
+    const res = await loginAPI(username, password);
 
-      if (res.data) {
-        localStorage.setItem('access_token',res.data.access_token);
-        message.success("Login successfully!");
-        navigate("/");
-      } else {
-        message.error(res.message || "Login failed!");
-      }
-    } catch (error: any) {
-      message.error(error.response?.data?.message || "Server error!");
-    } finally {
-      setIsSubmit(false);
+    if (res.data) {
+      setIsAuthenticated(true);
+      setUser(res.data.user);
+      localStorage.setItem("access_token", res.data.access_token);
+      message.success("Login successfully!");
+      navigate("/");
+    } else {
+      notification.error({
+        message: "Login failed!",
+        description: Array.isArray(res.message)
+          ? res.message.join(", ")
+          : res.message || "Invalid username or password!",
+        duration: 4,
+      });
     }
-  };
+  } catch (error: any) {
+    const errMsg =
+      error?.response?.data?.message ||
+      error?.message ||
+      "Server error. Please try again!";
+
+    notification.error({
+      message: "Login failed!",
+      description: Array.isArray(errMsg) ? errMsg.join(", ") : errMsg,
+      duration: 5,
+    });
+  } finally {
+    setIsSubmit(false);
+  }
+};
+
   return (
     <div
       style={{
