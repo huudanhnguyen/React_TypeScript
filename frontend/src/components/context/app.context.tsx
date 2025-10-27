@@ -1,4 +1,6 @@
-import { createContext, useState, useContext, useEffect } from "react";
+import { fetchAccountAPI, logoutAPI } from "@/services/api";
+import { createContext, useContext, useEffect, useState } from "react";
+import PacmanLoader from "react-spinners/PacmanLoader";
 
 interface IAppContext {
   isAuthenticated: boolean;
@@ -7,6 +9,7 @@ interface IAppContext {
   user: IUser | null;
   isAppLoading: boolean;
   setIsAppLoading: (v: boolean) => void;
+  logout: () => Promise<void>; // 👈 thêm logout vào context
 }
 
 const CurrentAppContext = createContext<IAppContext | null>(null);
@@ -15,51 +18,71 @@ type TProps = {
   children: React.ReactNode;
 };
 
-export const AppProvider = ({ children }: TProps) => {
+export const AppProvider = (props: TProps) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [user, setUser] = useState<IUser | null>(null);
   const [isAppLoading, setIsAppLoading] = useState<boolean>(true);
 
-  // ✅ Khi app load, đọc dữ liệu từ localStorage
   useEffect(() => {
-    const savedUser = localStorage.getItem("user");
-    const savedAuth = localStorage.getItem("isAuthenticated");
+    const fetchAccount = async () => {
+      try {
+        const res = await fetchAccountAPI();
+        if (res.data) {
+          setUser(res.data.user);
+          setIsAuthenticated(true);
+        }
+      } catch (error) {
+        setIsAuthenticated(false);
+        setUser(null);
+      } finally {
+        setIsAppLoading(false);
+      }
+    };
 
-    if (savedUser && savedAuth === "true") {
-      setUser(JSON.parse(savedUser));
-      setIsAuthenticated(true);
-    } else {
-      setUser(null);
-      setIsAuthenticated(false);
-    }
-
-    // setIsAppLoading(false);
+    fetchAccount();
   }, []);
 
-  // ✅ Khi user hoặc trạng thái đăng nhập thay đổi, lưu lại vào localStorage
-  useEffect(() => {
-    if (user && isAuthenticated) {
-      localStorage.setItem("user", JSON.stringify(user));
-      localStorage.setItem("isAuthenticated", "true");
-    } else {
-      localStorage.removeItem("user");
-      localStorage.removeItem("isAuthenticated");
+  // 🧠 Hàm logout: gọi API + clear context + localStorage
+  const logout = async () => {
+    try {
+      await logoutAPI();
+    } catch (error) {
+      console.warn("Logout failed on server, but clearing local state...");
     }
-  }, [user, isAuthenticated]);
+    localStorage.removeItem("access_token");
+    setIsAuthenticated(false);
+    setUser(null);
+  };
 
   return (
-    <CurrentAppContext.Provider
-      value={{
-        isAuthenticated,
-        setIsAuthenticated,
-        user,
-        setUser,
-        isAppLoading,
-        setIsAppLoading,
-      }}
-    >
-      {children}
-    </CurrentAppContext.Provider>
+    <>
+      {!isAppLoading ? (
+        <CurrentAppContext.Provider
+          value={{
+            isAuthenticated,
+            user,
+            setIsAuthenticated,
+            setUser,
+            isAppLoading,
+            setIsAppLoading,
+            logout, // 👈 thêm vào provider
+          }}
+        >
+          {props.children}
+        </CurrentAppContext.Provider>
+      ) : (
+        <div
+          style={{
+            position: "fixed",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+          }}
+        >
+          <PacmanLoader size={30} color="#36d6b4" />
+        </div>
+      )}
+    </>
   );
 };
 
@@ -68,7 +91,7 @@ export const useCurrentApp = () => {
 
   if (!currentAppContext) {
     throw new Error(
-      "useCurrentApp has to be used within <AppProvider>"
+      "useCurrentApp has to be used within <CurrentAppContext.Provider>"
     );
   }
 

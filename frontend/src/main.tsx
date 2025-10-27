@@ -1,58 +1,116 @@
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
-import Layout from "@/Layout";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import ErrorPage from "pages/client/error.tsx";
-import LoginPage from "pages/client/auth/login.tsx";
-import RegisterPage from "pages/client/auth/register.tsx";
-import BookPage from "pages/client/book.tsx";
-import UserPage from "pages/client/user.tsx";
-import "styles/global.scss";
-import { App } from "antd";
-import { AppProvider } from "components/context/app.context";
-import PrivateRoute from "./routes/privateRoute";
+import { StrictMode } from 'react'
+import { createRoot } from 'react-dom/client'
+import {
+  createBrowserRouter,
+  RouterProvider,
+} from "react-router-dom";
+import BookPage from 'pages/client/book';
+import AboutPage from 'pages/client/about';
+import LoginPage from 'pages/client/auth/login';
+import RegisterPage from 'pages/client/auth/register';
+import 'styles/global.scss'
+import HomePage from 'pages/client/home';
+import { App } from 'antd';
+import { AppProvider } from 'components/context/app.context';
+import DashBoardPage from 'pages/admin/dashboard';
+import ManageBookPage from 'pages/admin/manage.book';
+import ManageOrderPage from 'pages/admin/manage.order';
+import ManageUserPage from 'pages/admin/manage.user';
+import LayoutAdmin from 'components/layouts/layout.admin';
+import PrivateRoute from './routes/privateRoute';
+import Layout from './Layout';
 
 const router = createBrowserRouter([
-  // 🔹 Layout mặc định cho người dùng (có Header)
   {
     path: "/",
-    element: <Layout />,
-    errorElement: <ErrorPage />,
+    element: <Layout/>,
     children: [
-      { path: "/users", element: <UserPage /> },
-      { path: "/books", element: <BookPage /> },
+      {
+        index: true,
+        element: <HomePage />
+      },
+      {
+        path: "/book",
+        element: <BookPage />,
+      },
+      {
+        path: "/about",
+        element: <AboutPage />,
+      },
       {
         path: "/checkout",
         element: (
-          <PrivateRoute requiredRole="user">
-            <div>Checkout content</div>
+          <PrivateRoute>
+            <div>checkout page</div>
+          </PrivateRoute>
+        ),
+      }
+    ]
+  },
+  {
+    path: "admin",
+    element: <LayoutAdmin />,
+    children: [
+      {
+        index: true,
+        element: (
+          <PrivateRoute>
+            <DashBoardPage />
+          </PrivateRoute>
+        )
+      },
+      {
+        path: "book",
+        element: (
+          <PrivateRoute>
+            <ManageBookPage />
+          </PrivateRoute>
+        )
+      },
+      {
+        path: "order",
+        element: (
+          <PrivateRoute>
+            <ManageOrderPage />
+          </PrivateRoute>
+        )
+      },
+      {
+        path: "user",
+        element: (
+          <PrivateRoute>
+            <ManageUserPage />
           </PrivateRoute>
         ),
       },
-    ],
-  },
+      {
+        path: "/admin",
+        element: (
+          <PrivateRoute>
+            <div>admin page</div>
+          </PrivateRoute>
+        ),
+      },
 
-  // 🔹 Admin route riêng biệt (không kế thừa Header)
+    ]
+  },
   {
-    path: "/admin",
-    element: (
-      <PrivateRoute requiredRole="admin">
-        <div>admin page</div>
-      </PrivateRoute>
-    ),
+    path: "/login",
+    element: <LoginPage />,
+  },
+  {
+    path: "/register",
+    element: <RegisterPage />,
   },
 
-  // 🔹 Auth routes
-  { path: "/login", element: <LoginPage /> },
-  { path: "/register", element: <RegisterPage /> },
 ]);
 
-createRoot(document.getElementById("root")!).render(
+createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <AppProvider>
-      <App>
+    <App>
+      <AppProvider>
         <RouterProvider router={router} />
-      </App>
-    </AppProvider>
-  </StrictMode>
-);
+      </AppProvider>
+    </App>
+  </StrictMode>,
+)

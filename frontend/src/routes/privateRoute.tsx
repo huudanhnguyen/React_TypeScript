@@ -28,23 +28,21 @@ const PrivateRoute = ({ children, requiredRole }: IProps) => {
     );
   }
 
-  // 🚫 2️⃣ Nếu đã load xong mà vẫn chưa login
+  // 🚫 2️⃣ Nếu chưa login
   if (!isAuthenticated) {
     return (
-      <>
-        <Result
-          status="403"
-          title="403 - Not logged in"
-          subTitle="You must be logged in to access this page."
-          extra={
-            <Button type="primary">
-              <Link to="/login" state={{ from: location.pathname }}>
-                Go to Login
-              </Link>
-            </Button>
-          }
-        />
-      </>
+      <Result
+        status="403"
+        title="403 - Not logged in"
+        subTitle="You must be logged in to access this page."
+        extra={
+          <Button type="primary">
+            <Link to="/login" state={{ from: location.pathname }}>
+              Go to Login
+            </Link>
+          </Button>
+        }
+      />
     );
   }
 
@@ -64,7 +62,6 @@ const PrivateRoute = ({ children, requiredRole }: IProps) => {
     );
   }
 
-  // ✅ 4️⃣ Nếu mọi thứ ok → render trang thật
   return <>{children}</>;
 };
 
