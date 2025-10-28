@@ -1,4 +1,5 @@
 import { getUserAPI } from "@/services/api";
+import { dateRangeValidate } from "@/services/helper";
 import { PlusOutlined, DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import type { ActionType, ProColumns } from "@ant-design/pro-components";
 import { ProTable } from "@ant-design/pro-components";
@@ -31,6 +32,8 @@ const columns: ProColumns<IUserTable>[] = [
   {
     title: "Full Name",
     dataIndex: "fullName",
+    sorter: true,
+
     copyable: true,
   },
   {
@@ -41,10 +44,21 @@ const columns: ProColumns<IUserTable>[] = [
   {
     title: "Created At",
     dataIndex: "createdAt",
+    valueType: "date",
+    sorter: true,
+    hideInSearch: true,
+  },
+  {
+    title: "Created At",
+    dataIndex: "createdAtRange",
+    valueType: "dateRange",
+    hideInTable: true,
   },
   {
     title: "Action",
     key: "action",
+    hideInSearch: true,
+
     align: "center",
     render: (_, record) => (
       <Space size="middle">
@@ -68,6 +82,12 @@ const columns: ProColumns<IUserTable>[] = [
     ),
   },
 ];
+type TSearch = {
+  fullName: string;
+  email: string;
+  createdAt: string;
+  createdAtRange: string;
+};
 
 const TableUser = () => {
   const actionRef = useRef<ActionType>();
@@ -79,15 +99,37 @@ const TableUser = () => {
   });
   return (
     <>
-      <ProTable<IUserTable>
+      <ProTable<IUserTable, TSearch>
         columns={columns}
         actionRef={actionRef}
         cardBordered
         request={async (params, sort, filter) => {
-          const res = await getUserAPI(
-            params?.current ?? 1,
-            params?.pageSize ?? 10
-          );
+          let query = "";
+          if (params) {
+            query += `current=${params.current}&pageSize=${params.pageSize}`;
+            if (params.email) {
+              query += `&email=/${params.email}/i`;
+            }
+            if (params.fullName) {
+              query += `&fullName=/${params.fullName}/i`;
+            }
+            const createdAtRange = dateRangeValidate(params.createdAtRange);
+            if (createdAtRange) {
+              query += `&createdAt>=${createdAtRange[0]}&createdAt<=${createdAtRange[1]}`;
+            }
+          }
+          if (sort && sort.createdAt) {
+            query += `&sort=${
+              sort.createdAt === "ascend" ? "createdAt" : "-createdAt"
+            }`;
+          }
+          if (sort && sort.fullName) {
+            query += `&sort=${
+              sort.fullName === "ascend" ? "fullName" : "-fullName"
+            }`;
+          }
+
+          const res = await getUserAPI(query);
 
           if (res.data) {
             setMeta(res.data.meta);

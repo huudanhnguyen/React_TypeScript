@@ -42,7 +42,7 @@ export const fetchAccountAPI = () => {
   });
 };
 
-export const getUserAPI = (current:number,pageSize:number) => {
-  const urlBackend = `/api/v1/user?current=${current}&pageSize=${pageSize}`;
+export const getUserAPI = (query:string) => {
+  const urlBackend = `/api/v1/user?${query}`;
   return axios.get<IBackendRes<IModelPaginate<IUserTable>>>(urlBackend);
 };
