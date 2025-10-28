@@ -9,7 +9,7 @@ interface IAppContext {
   user: IUser | null;
   isAppLoading: boolean;
   setIsAppLoading: (v: boolean) => void;
-  logout: () => Promise<void>; // 👈 thêm logout vào context
+  logout: () => Promise<void>;
 }
 
 const CurrentAppContext = createContext<IAppContext | null>(null);
@@ -42,7 +42,6 @@ export const AppProvider = (props: TProps) => {
     fetchAccount();
   }, []);
 
-  // 🧠 Hàm logout: gọi API + clear context + localStorage
   const logout = async () => {
     try {
       await logoutAPI();
@@ -65,7 +64,7 @@ export const AppProvider = (props: TProps) => {
             setUser,
             isAppLoading,
             setIsAppLoading,
-            logout, // 👈 thêm vào provider
+            logout,
           }}
         >
           {props.children}

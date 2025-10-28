@@ -9,9 +9,10 @@ import {
     MenuFoldOutlined,
     MenuUnfoldOutlined,
 } from '@ant-design/icons';
-import { Layout, Menu, Dropdown, Space, Avatar } from 'antd';
+import { Layout, Menu, Dropdown, Space, Avatar,Result,Button } from 'antd';
 import { Outlet } from "react-router-dom";
 import { Link } from 'react-router-dom';
+import { useLocation } from 'react-router'
 import { useCurrentApp } from '../context/app.context';
 import type { MenuProps } from 'antd';
 type MenuItem = Required<MenuProps>['items'][number];
@@ -19,15 +20,16 @@ type MenuItem = Required<MenuProps>['items'][number];
 const { Content, Footer, Sider } = Layout;
 
 
+
 const LayoutAdmin = () => {
     const [collapsed, setCollapsed] = useState(false);
     const [activeMenu, setActiveMenu] = useState('dashboard');
-    const { user } = useCurrentApp();
+    const { user,logout,isAuthenticated } = useCurrentApp();
+    const location = useLocation()
 
-
-    const handleLogout = async () => {
-        //todo
-    }
+  const handleLogout = async () => {
+    await logout();
+  };
 
     const items: MenuItem[] = [
         {
@@ -45,11 +47,6 @@ const LayoutAdmin = () => {
                     key: 'crud',
                     icon: <TeamOutlined />,
                 },
-                // {
-                //     label: 'Files1',
-                //     key: 'file1',
-                //     icon: <TeamOutlined />,
-                // }
             ]
         },
         {
@@ -70,25 +67,47 @@ const LayoutAdmin = () => {
             label: <label
                 style={{ cursor: 'pointer' }}
                 onClick={() => alert("me")}
-            >Quản lý tài khoản</label>,
+            >Account management</label>,
             key: 'account',
         },
         {
-            label: <Link to={'/'}>Trang chủ</Link>,
+            label: <Link to={'/'}>Home</Link>,
             key: 'home',
         },
         {
             label: <label
                 style={{ cursor: 'pointer' }}
                 onClick={() => handleLogout()}
-            >Đăng xuất</label>,
+            >Logout</label>,
             key: 'logout',
         },
 
     ];
 
     const urlAvatar = `${import.meta.env.VITE_BACKEND_URL}/images/avatar/${user?.avatar}`;
-
+    if(isAuthenticated===false){
+        return(
+            <Outlet/>
+        )
+    }
+    const isAdminRoute=location.pathname.includes("admin");
+    if(isAuthenticated===true && isAdminRoute ===true){
+        const role=user?.role;
+        if(role==="USER"){
+            return(
+                      <Result
+        status="403"
+        title="403 - Forbidden"
+        subTitle="You are not authorized to access this page."
+        extra={
+          <Button type="primary">
+            <Link to="/">Back to Home</Link>
+          </Button>
+        }
+      />
+            )
+        }
+    }
     return (
         <>
             <Layout

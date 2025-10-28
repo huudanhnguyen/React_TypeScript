@@ -12,7 +12,6 @@ const PrivateRoute = ({ children, requiredRole }: IProps) => {
   const { isAuthenticated, user, isAppLoading } = useCurrentApp();
   const location = useLocation();
 
-  // 🌀 1️⃣ Nếu app vẫn đang load (Layout đang xác minh token)
   if (isAppLoading) {
     return (
       <div
@@ -28,7 +27,6 @@ const PrivateRoute = ({ children, requiredRole }: IProps) => {
     );
   }
 
-  // 🚫 2️⃣ Nếu chưa login
   if (!isAuthenticated) {
     return (
       <Result
@@ -46,7 +44,6 @@ const PrivateRoute = ({ children, requiredRole }: IProps) => {
     );
   }
 
-  // 🔒 3️⃣ Nếu yêu cầu quyền admin mà user không phải admin
   if (requiredRole === "admin" && user?.role?.toLowerCase() !== "admin") {
     return (
       <Result
