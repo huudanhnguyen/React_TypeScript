@@ -4,84 +4,9 @@ import { PlusOutlined, DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import type { ActionType, ProColumns } from "@ant-design/pro-components";
 import { ProTable } from "@ant-design/pro-components";
 import { Button, Space, Popconfirm } from "antd";
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState } from "react";
+import DetailUser from "./detail.user";
 
-const columns: ProColumns<IUserTable>[] = [
-  {
-    dataIndex: "index",
-    valueType: "indexBorder",
-    width: 48,
-  },
-  {
-    title: "ID",
-    dataIndex: "_id",
-    hideInSearch: true,
-    width: 180,
-    render: (_, record) => (
-      <a
-        href="#"
-        onClick={(e) => {
-          e.preventDefault();
-        }}
-      >
-        {record._id}
-      </a>
-    ),
-    responsive: ["sm", "md", "lg"],
-  },
-  {
-    title: "Full Name",
-    dataIndex: "fullName",
-    sorter: true,
-
-    copyable: true,
-  },
-  {
-    title: "Email",
-    dataIndex: "email",
-    copyable: true,
-  },
-  {
-    title: "Created At",
-    dataIndex: "createdAt",
-    valueType: "date",
-    sorter: true,
-    hideInSearch: true,
-  },
-  {
-    title: "Created At",
-    dataIndex: "createdAtRange",
-    valueType: "dateRange",
-    hideInTable: true,
-  },
-  {
-    title: "Action",
-    key: "action",
-    hideInSearch: true,
-
-    align: "center",
-    render: (_, record) => (
-      <Space size="middle">
-        <EditOutlined
-          onClick={() => {
-            //   setDataUpdate(record);
-            //   setIsModalUpdateOpen(true);
-          }}
-          style={{ color: "#1677ff", cursor: "pointer" }}
-        />
-        <Popconfirm
-          title="Delete User"
-          description="Are you sure you want to delete this user?"
-          // onConfirm={() => handleDeleteUser(record._id)}
-          okText="Yes"
-          cancelText="No"
-        >
-          <DeleteOutlined style={{ color: "red", cursor: "pointer" }} />
-        </Popconfirm>
-      </Space>
-    ),
-  },
-];
 type TSearch = {
   fullName: string;
   email: string;
@@ -97,6 +22,87 @@ const TableUser = () => {
     pages: 0,
     total: 0,
   });
+  const [openViewDetail, setOpenViewDetail] = useState<boolean>(false);
+  const [dataViewDetail, setDataViewDetail] = useState<IUserTable | null>(null);
+  const columns: ProColumns<IUserTable>[] = [
+    {
+      dataIndex: "index",
+      valueType: "indexBorder",
+      width: 48,
+    },
+    {
+      title: "ID",
+      dataIndex: "_id",
+      hideInSearch: true,
+      width: 180,
+      render: (_, record) => (
+        <a
+          href="#"
+          onClick={(e) => {
+            e.preventDefault();
+            setDataViewDetail(record); // ✅ record chính là dữ liệu của hàng
+            setOpenViewDetail(true);
+          }}
+        >
+          {record._id}
+        </a>
+      ),
+      responsive: ["sm", "md", "lg"],
+    },
+
+    {
+      title: "Full Name",
+      dataIndex: "fullName",
+      sorter: true,
+
+      copyable: true,
+    },
+    {
+      title: "Email",
+      dataIndex: "email",
+      copyable: true,
+    },
+    {
+      title: "Created At",
+      dataIndex: "createdAt",
+      valueType: "date",
+      sorter: true,
+      hideInSearch: true,
+    },
+    {
+      title: "Created At",
+      dataIndex: "createdAtRange",
+      valueType: "dateRange",
+      hideInTable: true,
+    },
+    {
+      title: "Action",
+      key: "action",
+      hideInSearch: true,
+
+      align: "center",
+      render: (_, record) => (
+        <Space size="middle">
+          <EditOutlined
+            onClick={() => {
+              //   setDataUpdate(record);
+              //   setIsModalUpdateOpen(true);
+            }}
+            style={{ color: "#1677ff", cursor: "pointer" }}
+          />
+          <Popconfirm
+            title="Delete User"
+            description="Are you sure you want to delete this user?"
+            // onConfirm={() => handleDeleteUser(record._id)}
+            okText="Yes"
+            cancelText="No"
+          >
+            <DeleteOutlined style={{ color: "red", cursor: "pointer" }} />
+          </Popconfirm>
+        </Space>
+      ),
+    },
+  ];
   return (
     <>
       <ProTable<IUserTable, TSearch>
@@ -171,6 +177,12 @@ const TableUser = () => {
             Add new
           </Button>,
         ]}
+      />
+      <DetailUser
+        openViewDetail={openViewDetail}
+        setOpenViewDetail={setOpenViewDetail}
+        dataViewDetail={dataViewDetail}
+        setDataViewDetail={setDataViewDetail}
       />
     </>
   );
