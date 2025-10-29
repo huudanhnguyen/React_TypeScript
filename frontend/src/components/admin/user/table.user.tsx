@@ -1,29 +1,40 @@
 import { getUserAPI } from "@/services/api";
 import { dateRangeValidate } from "@/services/helper";
-import { PlusOutlined, DeleteOutlined, EditOutlined } from "@ant-design/icons";
+import { PlusOutlined, DeleteOutlined, EditOutlined,ExportOutlined,ImportOutlined } from "@ant-design/icons";
 import type { ActionType, ProColumns } from "@ant-design/pro-components";
 import { ProTable } from "@ant-design/pro-components";
 import { Button, Space, Popconfirm } from "antd";
 import { useRef, useState } from "react";
 import DetailUser from "./detail.user";
+import FormUser from "./form.user";
+import ImportUser from "./import.user";
 
 type TSearch = {
-  fullName: string;
-  email: string;
-  createdAt: string;
-  createdAtRange: string;
+  fullName?: string;
+  email?: string;
+  createdAt?: string;
+  createdAtRange?: string[];
 };
 
 const TableUser = () => {
-  const actionRef = useRef<ActionType>();
+  const actionRef = useRef<ActionType | null>(null); // allows using actionRef.current?.reload() to reload the table (e.g., after creating a user)
   const [meta, setMeta] = useState({
     current: 1,
     pageSize: 5,
     pages: 0,
     total: 0,
   });
-  const [openViewDetail, setOpenViewDetail] = useState<boolean>(false);
+
+  const [openViewDetail, setOpenViewDetail] = useState(false);
   const [dataViewDetail, setDataViewDetail] = useState<IUserTable | null>(null);
+  const [openModalCreate, setOpenModalCreate] = useState(false);
+  const[openModalImport,setOpenModalImport]=useState(false);
+
+  // 🔄 Reload table after creating new user
+  const refreshTable = () => {
+    actionRef.current?.reload();
+  };
+
   const columns: ProColumns<IUserTable>[] = [
     {
       dataIndex: "index",
@@ -40,7 +51,7 @@ const TableUser = () => {
           href="#"
           onClick={(e) => {
             e.preventDefault();
-            setDataViewDetail(record); // ✅ record chính là dữ liệu của hàng
+            setDataViewDetail(record);
             setOpenViewDetail(true);
           }}
         >
@@ -49,12 +60,10 @@ const TableUser = () => {
       ),
       responsive: ["sm", "md", "lg"],
     },
-
     {
       title: "Full Name",
       dataIndex: "fullName",
       sorter: true,
-
       copyable: true,
     },
     {
@@ -79,14 +88,12 @@ const TableUser = () => {
       title: "Action",
       key: "action",
       hideInSearch: true,
-
       align: "center",
       render: (_, record) => (
         <Space size="middle">
           <EditOutlined
             onClick={() => {
-              //   setDataUpdate(record);
-              //   setIsModalUpdateOpen(true);
+              console.log("Edit user:", record._id);
             }}
             style={{ color: "#1677ff", cursor: "pointer" }}
           />
@@ -103,13 +110,14 @@ const TableUser = () => {
       ),
     },
   ];
+
   return (
     <>
       <ProTable<IUserTable, TSearch>
         columns={columns}
         actionRef={actionRef}
         cardBordered
-        request={async (params, sort, filter) => {
+        request={async (params, sort) => {
           let query = "";
           if (params) {
             query += `current=${params.current}&pageSize=${params.pageSize}`;
@@ -119,17 +127,23 @@ const TableUser = () => {
             if (params.fullName) {
               query += `&fullName=/${params.fullName}/i`;
             }
+
             const createdAtRange = dateRangeValidate(params.createdAtRange);
             if (createdAtRange) {
               query += `&createdAt>=${createdAtRange[0]}&createdAt<=${createdAtRange[1]}`;
             }
           }
-          if (sort && sort.createdAt) {
+
+          // Default sort
+          query += `&sort=-createdAt`;
+
+          if (sort?.createdAt) {
             query += `&sort=${
               sort.createdAt === "ascend" ? "createdAt" : "-createdAt"
             }`;
           }
-          if (sort && sort.fullName) {
+
+          if (sort?.fullName) {
             query += `&sort=${
               sort.fullName === "ascend" ? "fullName" : "-fullName"
             }`;
@@ -156,33 +170,53 @@ const TableUser = () => {
           pageSize: meta.pageSize,
           showSizeChanger: true,
           total: meta.total,
-          showTotal: (total, range) => {
-            return (
-              <div>
-                {range[0]}-{range[1]} of {total} rows
-              </div>
-            );
-          },
+          showTotal: (total, range) =>
+            `${range[0]}-${range[1]} of ${total} rows`,
         }}
         headerTitle="Table user"
         toolBarRender={() => [
           <Button
             key="button"
+            icon={<ExportOutlined />}
+            // onClick={() => setOpenModalCreate(true)}
+            type="primary"
+          >
+            Export
+          </Button>,
+          <Button
+            key="button"
+            icon={<ImportOutlined />}
+            onClick={() => setOpenModalImport(true)}
+            type="primary"
+          >
+            Import
+          </Button>,
+          <Button
+            key="button"
             icon={<PlusOutlined />}
-            onClick={() => {
-              actionRef.current?.reload();
-            }}
+            onClick={() => setOpenModalCreate(true)}
             type="primary"
           >
             Add new
           </Button>,
         ]}
       />
+
       <DetailUser
         openViewDetail={openViewDetail}
         setOpenViewDetail={setOpenViewDetail}
         dataViewDetail={dataViewDetail}
         setDataViewDetail={setDataViewDetail}
+      />
+
+      <FormUser
+        openModalCreate={openModalCreate}
+        setOpenModalCreate={setOpenModalCreate}
+        refreshTable={refreshTable}
+      />
+      <ImportUser
+        openModalImport={openModalImport}
+        setOpenModalImport={setOpenModalImport}  
       />
     </>
   );

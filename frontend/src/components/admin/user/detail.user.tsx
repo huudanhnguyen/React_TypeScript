@@ -1,10 +1,9 @@
-import { Badge, Descriptions, Drawer, Avatar, Divider, Empty } from "antd";
+import {Descriptions, Drawer, Avatar, Divider, Empty } from "antd";
 import dayjs from "dayjs";
 import {
   UserOutlined,
   MailOutlined,
   PhoneOutlined,
-  IdcardOutlined,
   FieldTimeOutlined,
 } from "@ant-design/icons";
 
@@ -97,7 +96,7 @@ const DetailUser = (props: IProps) => {
               >
                 {dataViewDetail.createdAt
                   ? dayjs(dataViewDetail.createdAt).format(
-                      "DD/MM/YYYY HH:mm:ss"
+                      "HH:mm - DD/MM/YYYY"
                     )
                   : "Not available"}
               </Descriptions.Item>
