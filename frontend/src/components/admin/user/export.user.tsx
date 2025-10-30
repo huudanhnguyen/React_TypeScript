@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Button, App } from "antd";
-import { DownloadOutlined } from "@ant-design/icons";
+import { ExportOutlined } from "@ant-design/icons";
 import ExcelJS from "exceljs";
 import { getUserAPI } from "@/services/api";
 
@@ -72,11 +72,11 @@ const ExportUser: React.FC = () => {
   return (
     <Button
       type="primary"
-      icon={<DownloadOutlined />}
+      icon={<ExportOutlined />}
       loading={isExporting}
       onClick={handleExport}
     >
-      Export Users
+      Export
     </Button>
   );
 };
