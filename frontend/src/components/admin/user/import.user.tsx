@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import { InboxOutlined } from "@ant-design/icons";
-import { Upload, Modal, Table, App } from "antd";
+import { InboxOutlined, DownloadOutlined } from "@ant-design/icons";
+import { Upload, Modal, Table, App, Button, Space } from "antd";
 import type { UploadProps } from "antd";
 import ExcelJS from "exceljs";
-import { createUserAPI, getUserAPI } from "@/services/api"; // ✅ dùng luôn getUserAPI để kiểm tra trùng
+import { createUserAPI, getUserAPI } from "@/services/api";
 
 const { Dragger } = Upload;
 
@@ -19,7 +19,11 @@ interface IUserImport {
   phone: string;
 }
 
-const ImportUser = ({ openModalImport, setOpenModalImport, refreshTable }: IProps) => {
+const ImportUser = ({
+  openModalImport,
+  setOpenModalImport,
+  refreshTable,
+}: IProps) => {
   const [dataPreview, setDataPreview] = useState<IUserImport[]>([]);
   const [dataImport, setDataImport] = useState<IUserImport[]>([]);
   const [isImporting, setIsImporting] = useState(false);
@@ -34,7 +38,62 @@ const ImportUser = ({ openModalImport, setOpenModalImport, refreshTable }: IProp
     setFileList([]);
   };
 
-  // ✅ Import data using your existing API
+  // ✅ Download sample Excel file
+  const handleDownloadSample = async () => {
+    try {
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet("Sample Users");
+
+      worksheet.columns = [
+        { header: "Full Name", key: "fullName", width: 25 },
+        { header: "Email", key: "email", width: 30 },
+        { header: "Phone", key: "phone", width: 20 },
+      ];
+
+      // Thêm một dòng mẫu
+      worksheet.addRow({
+        fullName: "John Doe",
+        email: "john@example.com",
+        phone: "0123456789",
+      });
+
+      // Style header
+      worksheet.getRow(1).eachCell((cell) => {
+        cell.font = { bold: true };
+        cell.alignment = { vertical: "middle", horizontal: "center" };
+        cell.fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: "FFCCE5FF" },
+        };
+        cell.border = {
+          top: { style: "thin" },
+          left: { style: "thin" },
+          bottom: { style: "thin" },
+          right: { style: "thin" },
+        };
+      });
+
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "sample_import_users.xlsx";
+      link.click();
+      window.URL.revokeObjectURL(url);
+
+      antdMessage.success("Sample file downloaded successfully!");
+    } catch (error) {
+      console.error("Download sample failed:", error);
+      antdMessage.error("Failed to download sample file!");
+    }
+  };
+
+  // ✅ Import data
   const handleImportData = async () => {
     if (dataImport.length === 0) {
       antdMessage.warning("No data to import!");
@@ -46,8 +105,9 @@ const ImportUser = ({ openModalImport, setOpenModalImport, refreshTable }: IProp
       antdMessage.loading("Checking duplicate users...");
 
       // 1️⃣ Get all existing users (only email)
-      const res = await getUserAPI("current=1&pageSize=9999"); // lấy tất cả user
-      const existingEmails = res?.data?.result?.map((u: any) => u.email.toLowerCase()) || [];
+      const res = await getUserAPI("current=1&pageSize=9999");
+      const existingEmails =
+        res?.data?.result?.map((u: any) => u.email.toLowerCase()) || [];
 
       // 2️⃣ Filter out duplicates
       const newUsers = dataImport.filter(
@@ -59,7 +119,6 @@ const ImportUser = ({ openModalImport, setOpenModalImport, refreshTable }: IProp
       if (newUsers.length === 0) {
         antdMessage.warning("All users already exist!");
         handleCancel();
-        setFileList([]);
         return;
       }
 
@@ -70,14 +129,12 @@ const ImportUser = ({ openModalImport, setOpenModalImport, refreshTable }: IProp
         await createUserAPI(fullName, email, "123456", phone);
       }
 
-      // 4️⃣ Show summary
       antdMessage.success(
         `${newUsers.length} users imported successfully. ${duplicateCount} duplicates skipped.`
       );
 
       refreshTable();
       handleCancel();
-      setFileList([]);
     } catch (error: any) {
       console.error("Import failed:", error);
       antdMessage.error(error.response?.data?.message || "Import failed!");
@@ -161,6 +218,17 @@ const ImportUser = ({ openModalImport, setOpenModalImport, refreshTable }: IProp
       }}
       maskClosable={false}
     >
+      {/* 🔹 Button download sample */}
+      <Space style={{ marginBottom: 16 }}>
+        <Button
+          icon={<DownloadOutlined />}
+          onClick={handleDownloadSample}
+          type="default"
+        >
+          Download Sample File
+        </Button>
+      </Space>
+
       <Dragger {...uploads}>
         <p className="ant-upload-drag-icon">
           <InboxOutlined />

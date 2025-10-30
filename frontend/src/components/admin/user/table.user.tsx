@@ -13,7 +13,8 @@ import { useRef, useState } from "react";
 import DetailUser from "./detail.user";
 import FormUser from "./form.user";
 import ImportUser from "./import.user";
-import ExportUser from "./export.user"; // ✅ Thêm dòng này
+import ExportUser from "./export.user";
+import UpdateUser from "./update.user";
 
 type TSearch = {
   fullName?: string;
@@ -21,6 +22,14 @@ type TSearch = {
   createdAt?: string;
   createdAtRange?: string[];
 };
+
+interface IUserTable {
+  _id: string;
+  fullName: string;
+  email: string;
+  phone?: string;
+  createdAt?: string;
+}
 
 const TableUser = () => {
   const actionRef = useRef<ActionType | null>(null);
@@ -35,8 +44,9 @@ const TableUser = () => {
   const [dataViewDetail, setDataViewDetail] = useState<IUserTable | null>(null);
   const [openModalCreate, setOpenModalCreate] = useState(false);
   const [openModalImport, setOpenModalImport] = useState(false);
+  const [openModalUpdate, setOpenModalUpdate] = useState(false);
+  const [dataUpdate, setDataUpdate] = useState<IUserTable | null>(null);
 
-  // 🔄 Reload table after creating new user
   const refreshTable = () => {
     actionRef.current?.reload();
   };
@@ -97,7 +107,10 @@ const TableUser = () => {
       render: (_, record) => (
         <Space size="middle">
           <EditOutlined
-            onClick={() => console.log("Edit user:", record._id)}
+            onClick={() => {
+              setDataUpdate(record); // ✅ Truyền data vào
+              setOpenModalUpdate(true);
+            }}
             style={{ color: "#1677ff", cursor: "pointer" }}
           />
           <Popconfirm
@@ -131,7 +144,6 @@ const TableUser = () => {
               query += `&createdAt>=${createdAtRange[0]}&createdAt<=${createdAtRange[1]}`;
           }
 
-          // Default sort
           query += `&sort=-createdAt`;
 
           if (sort?.createdAt) {
@@ -167,7 +179,7 @@ const TableUser = () => {
         }}
         headerTitle="User Management"
         toolBarRender={() => [
-          <ExportUser key="export" />, // ✅ dùng component riêng
+          <ExportUser key="export" />,
           <Button
             key="import"
             icon={<ImportOutlined />}
@@ -204,6 +216,13 @@ const TableUser = () => {
         openModalImport={openModalImport}
         setOpenModalImport={setOpenModalImport}
         refreshTable={refreshTable}
+      />
+
+      <UpdateUser
+        openModalUpdate={openModalUpdate}
+        setOpenModalUpdate={setOpenModalUpdate}
+        refreshTable={refreshTable}
+        dataUpdate={dataUpdate}
       />
     </>
   );

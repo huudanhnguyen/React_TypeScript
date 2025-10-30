@@ -50,3 +50,7 @@ export const createUserAPI = (fullName:string,email:string,password:string, phon
   const urlBackend = "/api/v1/user";
   return axios.post<IBackendRes<IUserTable>>(urlBackend,{fullName,email,password,phone});
 };
+export const updateUserAPI = (_id:string,fullName:string,phone:string) => {
+  const urlBackend = "/api/v1/user";
+  return axios.put<IBackendRes<IUserTable>>(urlBackend,{_id,fullName,phone});
+};
