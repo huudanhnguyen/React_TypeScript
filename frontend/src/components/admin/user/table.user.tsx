@@ -1,4 +1,4 @@
-import { getUserAPI } from "@/services/api";
+import { getUserAPI,deleteUserAPI } from "@/services/api";
 import { dateRangeValidate } from "@/services/helper";
 import {
   PlusOutlined,
@@ -8,7 +8,7 @@ import {
 } from "@ant-design/icons";
 import type { ActionType, ProColumns } from "@ant-design/pro-components";
 import { ProTable } from "@ant-design/pro-components";
-import { Button, Space, Popconfirm } from "antd";
+import { Button, Space, Popconfirm,notification, } from "antd";
 import { useRef, useState } from "react";
 import DetailUser from "./detail.user";
 import FormUser from "./form.user";
@@ -50,6 +50,29 @@ const TableUser = () => {
   const refreshTable = () => {
     actionRef.current?.reload();
   };
+  const handleDeleteUser = async (_id: string) => {
+    try {
+      const res = await deleteUserAPI(_id);
+      if (res && res.data) {
+        notification.success({
+          message: "Delete User",
+          description: "User deleted successfully",
+        });
+        refreshTable(); // 🔁 Cập nhật lại bảng
+      } else {
+        notification.error({
+          message: "Delete User Failed",
+          description: res?.message || "Unknown error",
+        });
+      }
+    } catch (error: any) {
+      notification.error({
+        message: "API Error",
+        description: error?.message || "Failed to delete user",
+      });
+    }
+  };
+
 
   const columns: ProColumns<IUserTable>[] = [
     {
@@ -118,6 +141,7 @@ const TableUser = () => {
             description="Are you sure you want to delete this user?"
             okText="Yes"
             cancelText="No"
+            onConfirm={() => handleDeleteUser(record._id)}
           >
             <DeleteOutlined style={{ color: "red", cursor: "pointer" }} />
           </Popconfirm>
