@@ -57,4 +57,17 @@ declare global {
     createdAt:Date;
     updatedAt:Date;
   }
+    interface IBookTable{
+    _id:string;
+    thumbnail:string;
+    slider:string[];
+    mainText:string;
+    author:string;
+    price:number;
+    sold:number;
+    quantity:number;
+    category:string;
+    createdAt:Date;
+    updateAt:Date;
+  }
 }

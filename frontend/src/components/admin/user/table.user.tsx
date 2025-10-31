@@ -58,8 +58,7 @@ const TableUser = () => {
           message: "Delete User",
           description: "User deleted successfully",
         });
-        refreshTable(); // 🔁 Cập nhật lại bảng
-      } else {
+        refreshTable();
         notification.error({
           message: "Delete User Failed",
           description: res?.message || "Unknown error",
