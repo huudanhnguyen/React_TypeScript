@@ -38,7 +38,7 @@ const UpdateBook = (props: IProps) => {
   const [slider, setSlider] = useState<UploadFile[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // 📦 Lấy danh mục
+  // 📦 Fetch category list
   useEffect(() => {
     const fetchCategory = async () => {
       try {
@@ -57,7 +57,7 @@ const UpdateBook = (props: IProps) => {
     fetchCategory();
   }, []);
 
-  // 🔄 Load data vào form khi mở modal
+  // 🔄 Load book data into the form when modal opens
   useEffect(() => {
     if (dataUpdate && openModalUpdate) {
       form.setFieldsValue({
@@ -80,7 +80,7 @@ const UpdateBook = (props: IProps) => {
         ]);
       } else setThumbnail([]);
 
-      if (dataUpdate.slider && Array.isArray(dataUpdate.slider)) {
+      if (Array.isArray(dataUpdate.slider)) {
         setSlider(
           dataUpdate.slider.map((img, index) => ({
             uid: String(index),
@@ -101,10 +101,10 @@ const UpdateBook = (props: IProps) => {
       reader.onerror = (error) => reject(error);
     });
 
-  // 📤 Upload ảnh lên server
-  const uploadImage = async (file: File) => {
+  // 📤 Upload image to server
+  const uploadImage = async (file: File): Promise<string> => {
     const res = await uploadFileAPI(file, "book");
-    return res.data?.fileUploaded;
+    return res.data?.fileUploaded ?? "";
   };
 
   const onFinish = async (values: any) => {
@@ -116,12 +116,12 @@ const UpdateBook = (props: IProps) => {
         ? [...dataUpdate.slider]
         : [];
 
-      // Thumbnail mới
+      // Upload new thumbnail
       if (thumbnail.length && thumbnail[0].originFileObj) {
         thumbnailName = await uploadImage(thumbnail[0].originFileObj as File);
       }
 
-      // Slider mới
+      // Upload new slider images
       const newSliderFiles = slider.filter((f) => f.originFileObj);
       const uploadedSliders = await Promise.all(
         newSliderFiles.map(async (f) => {
@@ -130,7 +130,7 @@ const UpdateBook = (props: IProps) => {
         })
       );
 
-      // Merge slider cũ + mới
+      // Combine old + new slider images
       const finalSlider = [
         ...sliderNames.filter(
           (name) => !newSliderFiles.some((f) => f.name === name)
@@ -138,7 +138,6 @@ const UpdateBook = (props: IProps) => {
         ...uploadedSliders,
       ];
 
-      // ✅ Gọi API đúng cách (theo định nghĩa cũ)
       const res = await updateBookAPI(
         dataUpdate._id,
         values.mainText,
@@ -151,11 +150,11 @@ const UpdateBook = (props: IProps) => {
       );
 
       if (res && res.data) {
-        message.success("Cập nhật sách thành công!");
+        message.success("Book updated successfully!");
         refreshTable();
         handleCancel();
       } else {
-        message.error("Cập nhật thất bại!");
+        message.error("Failed to update book!");
       }
     } catch (error) {
       console.error("Error updating book:", error);
@@ -181,11 +180,16 @@ const UpdateBook = (props: IProps) => {
       width={700}
       destroyOnClose
     >
-      <Form form={form} layout="vertical" onFinish={onFinish} autoComplete="off">
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={onFinish}
+        autoComplete="off"
+      >
         <Form.Item
           label="Book Title"
           name="mainText"
-          rules={[{ required: true, message: "Please enter book title" }]}
+          rules={[{ required: true, message: "Please enter the book title" }]}
         >
           <Input placeholder="Enter book title" />
         </Form.Item>
@@ -193,15 +197,15 @@ const UpdateBook = (props: IProps) => {
         <Form.Item
           label="Author"
           name="author"
-          rules={[{ required: true, message: "Please enter author name" }]}
+          rules={[{ required: true, message: "Please enter the author name" }]}
         >
           <Input placeholder="Enter author name" />
         </Form.Item>
 
         <Form.Item
-          label="Price (VNĐ)"
+          label="Price (VND)"
           name="price"
-          rules={[{ required: true, message: "Please enter price" }]}
+          rules={[{ required: true, message: "Please enter the price" }]}
         >
           <InputNumber
             min={0}
@@ -221,7 +225,7 @@ const UpdateBook = (props: IProps) => {
         <Form.Item
           label="Quantity"
           name="quantity"
-          rules={[{ required: true, message: "Please enter quantity" }]}
+          rules={[{ required: true, message: "Please enter the quantity" }]}
         >
           <InputNumber min={1} style={{ width: "100%" }} />
         </Form.Item>
@@ -229,9 +233,9 @@ const UpdateBook = (props: IProps) => {
         <Form.Item
           label="Category"
           name="category"
-          rules={[{ required: true, message: "Please select category" }]}
+          rules={[{ required: true, message: "Please select a category" }]}
         >
-          <Select placeholder="Select category">
+          <Select placeholder="Select a category">
             {listCategory.map((item) => (
               <Select.Option key={item.value} value={item.value}>
                 {item.label}
@@ -245,7 +249,7 @@ const UpdateBook = (props: IProps) => {
             listType="picture-card"
             maxCount={1}
             beforeUpload={() => false}
-            onChange={({ fileList }) => setThumbnail(fileList)}
+            onChange={({ fileList }) => setThumbnail(fileList as UploadFile[])}
             onPreview={async (file) => {
               const src =
                 file.url || (await getBase64(file.originFileObj as File));
@@ -270,7 +274,7 @@ const UpdateBook = (props: IProps) => {
             listType="picture-card"
             multiple
             beforeUpload={() => false}
-            onChange={({ fileList }) => setSlider(fileList)}
+            onChange={({ fileList }) => setSlider(fileList as UploadFile[])}
             onPreview={async (file) => {
               const src =
                 file.url || (await getBase64(file.originFileObj as File));

@@ -1,0 +1,90 @@
+/* ----------- Layout cơ bản ----------- */
+.sider {
+  background: #fff;
+  padding: 20px;
+  border-right: 1px solid #f0f0f0;
+}
+
+.filter-section {
+  margin-bottom: 20px;
+}
+
+.price-inputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 10px 0;
+}
+
+.content {
+  background: #fff;
+  padding: 20px;
+}
+
+.menu-sort {
+  border-bottom: 2px solid #f0f0f0;
+  margin-bottom: 20px;
+}
+
+.product-name {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 5px;
+  height: 40px;
+  overflow: hidden;
+}
+
+.product-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 30px;
+
+  .ant-pagination {
+    margin: 0 auto;
+  }
+}
+
+/* ----------- Responsive ----------- */
+@media (max-width: 768px) {
+  /* Ẩn sidebar desktop */
+  .sider {
+    display: none !important;
+  }
+
+  /* Hiện nút bộ lọc */
+  .mobile-filter-btn {
+    display: flex !important;
+    justify-content: flex-end;
+    margin-bottom: 10px;
+
+    button {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 500;
+    }
+  }
+
+  .content {
+    padding: 10px;
+  }
+
+  .menu-sort {
+    flex-wrap: wrap;
+    justify-content: space-around;
+  }
+}
+
+/* Desktop: Ẩn nút lọc */
+@media (min-width: 769px) {
+  .mobile-filter-btn {
+    display: none !important;
+  }
+}

@@ -181,12 +181,12 @@ const DetailBook = ({
       <Divider />
 
       {/* Description */}
-      <div>
+      {/* <div>
         <h3 style={{ fontWeight: 600, marginBottom: 8 }}>Description</h3>
         <p style={{ color: "#555", lineHeight: 1.6 }}>
           {dataViewDetail.description || "No description available."}
         </p>
-      </div>
+      </div> */}
 
       <Divider />
 
