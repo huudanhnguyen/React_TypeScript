@@ -1,4 +1,4 @@
-import { getBookAPI, deleteBookAPI } from "@/services/api";
+import { getBookAPI, deleteBookAPI, getBookCategoryAPI } from "@/services/api";
 import { dateRangeValidate } from "@/services/helper";
 import {
   PlusOutlined,
@@ -8,8 +8,8 @@ import {
 } from "@ant-design/icons";
 import type { ActionType, ProColumns } from "@ant-design/pro-components";
 import { ProTable } from "@ant-design/pro-components";
-import { Button, Space, Popconfirm, Avatar, App } from "antd";
-import { useRef, useState } from "react";
+import { Button, Space, Popconfirm, Avatar, App, Select } from "antd";
+import { useEffect, useRef, useState } from "react";
 import DetailBook from "./detail.book";
 import FormBook from "./form.book";
 import UpdateBook from "./update.book";
@@ -19,6 +19,7 @@ type TSearch = {
   author?: string;
   createdAt?: string;
   createdAtRange?: string[];
+  category?: string;
 };
 
 const TableBook = () => {
@@ -32,6 +33,7 @@ const TableBook = () => {
     total: 0,
   });
 
+  const [categories, setCategories] = useState<{ label: string; value: string }[]>([]);
   const [openViewDetail, setOpenViewDetail] = useState(false);
   const [dataViewDetail, setDataViewDetail] = useState<IBookTable | null>(null);
   const [openModalCreate, setOpenModalCreate] = useState(false);
@@ -41,6 +43,24 @@ const TableBook = () => {
   const refreshTable = () => {
     actionRef.current?.reload();
   };
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await getBookCategoryAPI();
+        if (res?.data) {
+          const opts = res.data.map((cat: any) => ({
+            label: cat,
+            value: cat,
+          }));
+          setCategories(opts);
+        }
+      } catch (err) {
+        console.error("Error fetching categories:", err);
+      }
+    };
+    fetchCategories();
+  }, []);
 
   const handleDeleteBook = async (bookId: string) => {
     try {
@@ -62,11 +82,11 @@ const TableBook = () => {
       dataIndex: "index",
       valueType: "indexBorder",
       width: 48,
-      responsive: ["sm", "md", "lg", "xl"],
     },
     {
       title: "Thumbnail",
       dataIndex: "thumbnail",
+      hideInSearch: true,
       align: "center",
       width: 90,
       render: (thumbnail: string) => {
@@ -140,18 +160,29 @@ const TableBook = () => {
               currency: "VND",
             }).format(price)
           : "-",
+      hideInSearch: true,
     },
     {
       title: "Sold",
       dataIndex: "sold",
+      hideInSearch: true,
     },
     {
       title: "Quantity",
       dataIndex: "quantity",
+      hideInSearch: true,
     },
     {
       title: "Category",
       dataIndex: "category",
+      renderFormItem: () => (
+        <Select
+          allowClear
+          placeholder="Select category"
+          options={categories}
+          style={{ width: "100%" }}
+        />
+      ),
     },
     {
       title: "Created At",
@@ -165,6 +196,7 @@ const TableBook = () => {
       key: "action",
       align: "center",
       fixed: "right",
+      hideInSearch: true,
       width: 90,
       render: (_, record) => (
         <Space size="middle">
@@ -202,6 +234,7 @@ const TableBook = () => {
             query += `current=${params.current}&pageSize=${params.pageSize}`;
             if (params.mainText) query += `&mainText=/${params.mainText}/i`;
             if (params.author) query += `&author=/${params.author}/i`;
+            if (params.category) query += `&category=${params.category}`;
 
             const createdAtRange = dateRangeValidate(params.createdAtRange);
             if (createdAtRange)
@@ -230,7 +263,7 @@ const TableBook = () => {
           showTotal: (total, range) =>
             `${range[0]}-${range[1]} of ${total} books`,
         }}
-        headerTitle="📚 Book Management"
+        headerTitle="Book Management"
         toolBarRender={() => [
           <Button
             key="add"
@@ -243,7 +276,7 @@ const TableBook = () => {
         ]}
       />
 
-      {/* 🔍 View Detail */}
+      {/*View Detail */}
       <DetailBook
         openViewDetail={openViewDetail}
         setOpenViewDetail={setOpenViewDetail}
@@ -251,14 +284,14 @@ const TableBook = () => {
         setDataViewDetail={setDataViewDetail}
       />
 
-      {/* ➕ Create */}
+      {/*Create */}
       <FormBook
         openModalCreate={openModalCreate}
         setOpenModalCreate={setOpenModalCreate}
         refreshTable={refreshTable}
       />
 
-      {/* ✏️ Update */}
+      {/* Update */}
       <UpdateBook
         openModalUpdate={openModalUpdate}
         setOpenModalUpdate={setOpenModalUpdate}

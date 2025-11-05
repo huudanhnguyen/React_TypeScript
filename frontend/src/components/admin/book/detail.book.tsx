@@ -194,12 +194,12 @@ const DetailBook = ({
       <div>
         <h3 style={{ fontWeight: 600, marginBottom: 8 }}>Book Gallery</h3>
 
-        <Upload {...uploadProps}>
+        {/* <Upload {...uploadProps}>
           <div>
             <PlusOutlined />
             <div style={{ marginTop: 8 }}>Upload</div>
           </div>
-        </Upload>
+        </Upload> */}
 
         {fileList.length > 0 && (
           <div style={{ marginTop: 20 }}>
